@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  ngnix-gateway:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/ngnix.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - sv-auth
+      - sv-user
+      - sv-orders
+    networks:
+      - microservices-net
+    #contenedor de microservicio de autentificacion
+  sv-auth:
+    build: ./sv-auth
+    ports:
+      -"8081:81"
+    environment:
+      - REDIS_HOST=redis-cache
+      - DB_HOST=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      - redis-cache
+      - postgres
+    networks:
+      - microservices-net
+
+  #contenedor de microservicio de usuarios
+  sv-orders:
+    build: ./sv-orders
+    ports:
+      - "8082:82"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      - redis-cache
+      - postgres
+    networks:
+      - microservices-net
+
+  #contenedor de microservicio de ordenes
+  sv-users:  
+    build: ./sv-user
+    ports:
+      - "8083:83"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      - redis-cache
+      - postgres
+    networks:
+      - microservices-net
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      -"5432:5432"
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - microservices-net
+    
+networks:
+  microservices-net:
+    driver: bridge
+  
+volumes:
+  postgres_data:
