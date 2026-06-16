@@ -4,40 +4,28 @@ services:
   ngnix-gateway:
     image: nginx:alpine
     ports:
-      - "8080:80"
+      - "8090:80"
     volumes:
-      - ./nginx/ngnix.conf:/etc/nginx/nginx.conf
+      - ./ngnix/ngnix.conf:/etc/nginx/nginx.conf
     depends_on:
       - sv-auth
-      - sv-user
+      - sv-users
       - sv-orders
     networks:
       - microservices-net
-    #contenedor de microservicio de autentificacion
+
+  #contenedor de microservicio de autentificacion
   sv-auth:
     build: ./sv-auth
     ports:
-      -"8081:81"
+      - "8081:8081"
     environment:
       - REDIS_HOST=redis-cache
-      - DB_HOST=postgres
+      - REDIS_PASSWORD=
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=postgres
       - DB_USER=postgres
-      - DB_PASSWORD=postgres
-    depends_on:
-      - redis-cache
-      - postgres
-    networks:
-      - microservices-net
-
-  #contenedor de microservicio de usuarios
-  sv-orders:
-    build: ./sv-orders
-    ports:
-      - "8082:82"
-    environment:
-      - DB_HOST=postgres
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - DB_PASS=postgres
     depends_on:
       - redis-cache
       - postgres
@@ -45,36 +33,66 @@ services:
       - microservices-net
 
   #contenedor de microservicio de ordenes
-  sv-users:  
-    build: ./sv-user
+  sv-orders:
+    build: ./sv-orders
     ports:
-      - "8083:83"
+      - "8082:8082"
     environment:
-      - DB_HOST=postgres
+      - REDIS_HOST=redis-cache
+      - REDIS_PASSWORD=
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=postgres
       - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - DB_PASS=postgres
     depends_on:
       - redis-cache
       - postgres
     networks:
       - microservices-net
+
+  #contenedor de microservicio de usuarios
+  sv-users:
+    build: ./sv-users
+    ports:
+      - "8083:8083"
+    environment:
+      - REDIS_HOST=redis-cache
+      - REDIS_PASSWORD=
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=postgres
+      - DB_USER=postgres
+      - DB_PASS=postgres
+    depends_on:
+      - redis-cache
+      - postgres
+    networks:
+      - microservices-net
+
+  redis-cache:
+    image: redis:alpine
+    ports:
+      - "6380:6379"
+
+    networks:
+      - microservices-net
+
   postgres:
     image: postgres:16-alpine
+    container_name: postgres-db-microservices
     ports:
-      -"5432:5432"
-
+      - "5433:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-
+      POSTGRES_DB: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - microservices-net
-    
+
 networks:
   microservices-net:
     driver: bridge
-  
+
 volumes:
   postgres_data:
