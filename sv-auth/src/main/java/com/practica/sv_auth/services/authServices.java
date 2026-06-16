@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.practica.sv_auth.dto.credentialRequest;
 import com.practica.sv_auth.repository.credentialRepository;
 
 @Service
@@ -17,11 +18,11 @@ public class authServices {
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
-    
-    public Map<String, String> login(CredentialRequest dto) {
+
+    public Map<String, String> login(credentialRequest dto) {
         return credentialRepository.findByUsername(dto.getUsername())
-                .filter(credential -> passwordEncoder.matches(dto.getPassword(), credential.getPassword()))
-                .map(credential -> Map.of(
+                .filter(c -> passwordEncoder.matches(dto.getPassword(), c.getPassword()))
+                .map(c -> Map.of(
                     
                     "token", "jwt-token-placeholder" + System.currentTimeMillis(),
                     "message", "Login successful"
