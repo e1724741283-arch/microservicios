@@ -1,12 +1,19 @@
 package com.practica.sv_orders.controller;
+
+import com.practica.sv_orders.dto.ordersRequest;
 import com.practica.sv_orders.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestController;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-@RequestController
+import jakarta.validation.Valid;
+
+import java.util.Map;
+
+@RestController
 public class OrderController {
 
     @Autowired
